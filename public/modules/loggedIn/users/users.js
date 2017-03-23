@@ -91,114 +91,158 @@
                 is_grid: 1
             };
 
-            params.url = "/api/getUsers";
-            params.datatype = "json";
-            params.mtype = 'GET';
-            params.styleUI = 'Bootstrap';
-            params.autowidth = true;
-            params.height = 'auto';
-            params.rownumbers = true;
-            params.shrinkToFit = true;
-            params.colNames = [
-                'Actions',
-                'Full name',
-                'Date of birth',
-                'Registration email',
-                'Gender',
-                'Antenna',
-                'Department',
-                'Internal email',
-                'Studies type',
-                'Studies field',
-                'Status'
-            ];
-            params.colModel = [
-                {
-                    name: 'actions',
-                    index: 'actions',
-                    sortable: false,
-                    width: 50
-                }, {
-                    name: 'name',
-                    index: 'name',
-                    width: 200
-                }, {
-                    name: 'date_of_birth',
-                    index: 'date_of_birth',
-                    width: 100
-                }, {
-                    name: 'contact_email',
-                    index: 'contact_email',
-                    width: 100
-                }, {
-                    name: 'gender',
-                    index: 'gender',
-                    width: 100
-                }, {
-                    name: 'antenna',
-                    index: 'antenna',
-                    sortable: false,
-                    width: 100
-                }, {
-                    name: 'department',
-                    index: 'department',
-                    sortable: false,
-                    width: 100
-                }, {
-                    name: 'internal_email',
-                    index: 'internal_email',
-                    width: 100
-                }, {
-                    name: 'studies_type',
-                    index: 'studies_type',
-                    sortable: false,
-                    width: 100
-                }, {
-                    name: 'studies_field',
-                    index: 'studies_field',
-                    sortable: false,
-                    width: 95
-                }, {
-                    name: 'status',
-                    index: 'status',
-                    sortable: false,
-                    hidden: true,
-                    width: 1
+
+            $http({
+                method: 'GET',
+                url: '/api/getUsers'
+            })
+            .then(function successCallback(response) {
+                params.debug = true;
+                params.data = vm.formatDataForGrid(response.data);
+                console.log(JSON.stringify(params.data, null, 2));
+
+                params.datatype = "json";
+                params.styleUI = 'Bootstrap';
+                params.autowidth = true;
+                params.height = 'auto';
+                params.rownumbers = true;
+                params.shrinkToFit = true;
+                params.colNames = [
+                    'Actions',
+                    'Full name',
+                    'Date of birth',
+                    'Registration email',
+                    'Gender',
+                    'Antenna',
+                    'Department',
+                    'Internal email',
+                    'Studies type',
+                    'Studies field',
+                    'Status'
+                ];
+                params.colModel = [
+                    {
+                        name: 'actions',
+                        index: 'actions',
+                        sortable: false,
+                        width: 50
+                    }, {
+                        name: 'name',
+                        index: 'name',
+                        width: 200
+                    }, {
+                        name: 'date_of_birth',
+                        index: 'date_of_birth',
+                        width: 100
+                    }, {
+                        name: 'contact_email',
+                        index: 'contact_email',
+                        width: 100
+                    }, {
+                        name: 'gender',
+                        index: 'gender',
+                        width: 100
+                    }, {
+                        name: 'antenna',
+                        index: 'antenna',
+                        sortable: false,
+                        width: 100
+                    }, {
+                        name: 'department',
+                        index: 'department',
+                        sortable: false,
+                        width: 100
+                    }, {
+                        name: 'internal_email',
+                        index: 'internal_email',
+                        width: 100
+                    }, {
+                        name: 'studies_type',
+                        index: 'studies_type',
+                        sortable: false,
+                        width: 100
+                    }, {
+                        name: 'studies_field',
+                        index: 'studies_field',
+                        sortable: false,
+                        width: 95
+                    }, {
+                        name: 'status',
+                        index: 'status',
+                        sortable: false,
+                        hidden: true,
+                        width: 1
+                    }
+                ];
+                params.rowNum = 25;
+                params.rowList = [10, 25, 50, 75, 100, 150];
+                params.pager = user_grid_pager;
+                params.sortname = 'name';
+                params.sortorder = 'ASC';
+                params.viewrecords = true;
+                params.caption = "Users";
+
+                params.gridComplete = function() {
+                    $compile($('.clickMeUser'))($scope);
                 }
-            ];
-            params.rowNum = 25;
-            params.rowList = [10, 25, 50, 75, 100, 150];
-            params.pager = user_grid_pager;
-            params.sortname = 'name';
-            params.sortorder = 'ASC';
-            params.viewrecords = true;
-            params.caption = "Users";
 
-            params.gridComplete = function() {
-                $compile($('.clickMeUser'))($scope);
-            }
-
-            params.rowattr = function (rd) {
-                var row = rd.status;
-                switch(row) {
-                    case '1': // Active
-                        return {'style': "background: #5cb85c; color: #000"}; // green
-                    case '2': // Inactive
-                        return {'style': "background: #C1BCBC; color: #000"}; // grey
-                    case '3': // Suspended
-                        return {'style': "background: #d9534f; color: #000"}; // red
+                params.rowattr = function (rd) {
+                    var row = rd.status;
+                    switch(row) {
+                        case '1': // Active
+                            return {'style': "background: #5cb85c; color: #000"}; // green
+                        case '2': // Inactive
+                            return {'style': "background: #C1BCBC; color: #000"}; // grey
+                        case '3': // Suspended
+                            return {'style': "background: #d9534f; color: #000"}; // red
+                    }
                 }
-            }
 
-            jQuery(user_grid_container).jqGrid(params);
+                console.log(jQuery(user_grid_container));
+                jQuery(user_grid_container).jqGrid(params);
 
-            jQuery(user_grid_container).jqGrid('navGrid', user_grid_pager, {
-                refresh: true,
-                edit: false,
-                add: false,
-                del: false,
-                search: false
+                jQuery(user_grid_container).jqGrid('navGrid', user_grid_pager, {
+                    refresh: true,
+                    edit: false,
+                    add: false,
+                    del: false,
+                    search: false
+                });
             });
+        }
+
+        vm.formatDataForGrid = function(input) {
+          var output = {};
+          var rows = [];
+
+          for (var i = 0; i < input.data.length; i++) {
+            var row = {};
+            var d = input.data[i];
+            row.id = d.id;
+            row.cell = [
+              d.id,
+              d.first_name + d.last_name + "",
+              d.date_of_birth + "",
+              d.contact_email + "",
+              d.gender + "",
+              d.antenna.name + "",
+              d.department + "",
+              d.internal_email + "",
+              d.studies_type_id + "",
+              d.studies_field_id + "",
+              1 + "",
+              "seo_url" + "",
+            ];
+            rows.push(row);
+          }
+
+          output['rows'] = rows;
+
+          output.records = 4;
+          output.page = 1;
+          output.total = 1;
+          return "{'rows':[{'id':1,'cell':[1,'PorutiuFlaviu','24/01/1994','flaviu@glitch.ro','Male','Globalantenna','-','Nointernalemailassigned!','Agriculture','Bachelor','1','glitch']},{'id':2,'cell':[2,'fsdfasdasdfsd','09/03/2017','asd@mail','Male','Globalantenna','DepartmentX','Nointernalemailassigned!','CivilEngineering','PhD','1','asdfsd.fsdfasd']},{'id':3,'cell':[3,'asdfasdf','05/04/2017','asdf@gmail','Other','Globalantenna','DepartmentX','Nointernalemailassigned!','EuropeanStudies','PhD','1','asdf.asdf']},{'id':4,'cell':[4,'sdfhaasdf','23/03/2017','sdfg@asdf','Other','Globalantenna','DepartmentX','Nointernalemailassigned!','Chemistry','Master','1','aasdf.sdfh']}],'records':4,'page':1,'total':1}";
+          return output;
         }
 
         vm.searchUserGrid = function() {
@@ -379,7 +423,7 @@
         vm.activateUser = function() {
             vm.user.department_id = $('#activateDepartment').val();
             vm.user.feesPaid = {};
-            $.each(vm.fees, function(key, val) {   
+            $.each(vm.fees, function(key, val) {
                 vm.user.feesPaid[val.cell[0]] = $('#feepaid_'+val.cell[0]).val();
             });
             $http({

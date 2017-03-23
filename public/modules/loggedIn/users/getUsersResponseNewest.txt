@@ -1,0 +1,93 @@
+{
+  "rows": [
+    {
+      "id": 1,
+      "cell": [
+        1,
+        "FlaviuPorutiu",
+        "1994-01-24 00:00:00",
+        "flaviu@glitch.ro",
+        1,
+        "Global antenna",
+        null,
+        "No internal email assigned!",
+        1,
+        1,
+        1,
+        "seo_url"
+      ]
+    },
+    {
+      "id": 2,
+      "cell": [
+        2,
+        "asdfsdfsdfasd",
+        "2017-03-09 00:00:00",
+        "asd@mail",
+        1,
+        "Global antenna",
+        {
+          "id": 1,
+          "name": "Department X",
+          "description": "xxx",
+          "created_at": "2017-03-20 12:19:46",
+          "updated_at": "2017-03-20 12:19:46"
+        },
+        "No internal email assigned!",
+        3,
+        6,
+        1,
+        "seo_url"
+      ]
+    },
+    {
+      "id": 3,
+      "cell": [
+        3,
+        "asdfasdf",
+        "2017-04-05 00:00:00",
+        "asdf@gmail",
+        3,
+        "Global antenna",
+        {
+          "id": 1,
+          "name": "Department X",
+          "description": "xxx",
+          "created_at": "2017-03-20 12:19:46",
+          "updated_at": "2017-03-20 12:19:46"
+        },
+        "No internal email assigned!",
+        3,
+        11,
+        1,
+        "seo_url"
+      ]
+    },
+    {
+      "id": 4,
+      "cell": [
+        4,
+        "aasdfsdfh",
+        "2017-03-23 00:00:00",
+        "sdfg@asdf",
+        3,
+        "Global antenna",
+        {
+          "id": 1,
+          "name": "Department X",
+          "description": "xxx",
+          "created_at": "2017-03-20 12:19:46",
+          "updated_at": "2017-03-20 12:19:46"
+        },
+        "No internal email assigned!",
+        2,
+        5,
+        1,
+        "seo_url"
+      ]
+    }
+  ],
+  "records": 4,
+  "page": 1,
+  "total": 1
+}

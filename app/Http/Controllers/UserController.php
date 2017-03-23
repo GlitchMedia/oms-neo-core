@@ -64,6 +64,8 @@ class UserController extends Controller
         }
 
         $users = $user->getFiltered($search);
+        return Self::responseData($users);
+        //Formatting the response to comply with the grid library should not be done in the API...
 
         if($export) {
             Excel::create('users', function($excel) use ($users) {
@@ -124,17 +126,14 @@ class UserController extends Controller
         		)
         	);
         }
-
-        return response(json_encode($toReturn), 200);
+        return Self::responseFailure("This should not be run.");
     }
 
     public function getUser(User $user) {
         $id = Input::get('id');
         $user = $user->with('antenna')->findOrFail($id);
 
-        $toReturn['success'] = 1;
-        $toReturn['user'] = $user;
-        return response(json_encode($toReturn), 200);
+        return Self::responseData($user, "The requested user.");
     }
 
     public function activateUser(User $user, Role $role, Fee $fee, EmailTemplate $tpl, Request $req) {
@@ -144,9 +143,7 @@ class UserController extends Controller
         $user = $user->findOrFail($id);
 
         if(!empty($user->activated_at)) {
-            $toReturn['success'] = 0;
-            $toReturn['message'] = "User already activated!";
-            return response(json_encode($toReturn), 200);
+            return Self::responseFailure("User already activated.");
         }
 
         $departmentId = Input::get('department_id');
@@ -238,15 +235,14 @@ class UserController extends Controller
             $message->subject($addToView['title']);
         });
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess('User activated.');
     }
 
+    //TODO this method does not return the same info about a user as getUser does
     public function getUserByToken(Auth $auth) {
         $token = Input::get('token');
         if(empty($token)) {
-            $toReturn['success'] = 0;
-            return response(json_encode($toReturn), 200);
+            return Self::responseFailure("Empty auth token.");
         }
 
         $now = date('Y-m-d H:i:s');
@@ -258,10 +254,10 @@ class UserController extends Controller
                         ->firstOrFail();
         $antenna = Antenna::findOrFail($userData->user->antenna_id);
 
-        $toReturn['success'] = 1;
-        $toReturn['user'] = $userData->user;
-        $toReturn['user']['antenna'] = $antenna->name;
-        return response(json_encode($toReturn), 200);
+        $data = $userData->user;
+        $data['antenna'] = $antenna->name;
+
+        return Self::responseData($data);
     }
 
     public function getUserProfile(User $user, WorkingGroup $wg, Department $dep, Role $role, Fee $fee, UserRole $userRole, Request $req) {
@@ -273,7 +269,6 @@ class UserController extends Controller
         $user = $user->with('antenna', 'department', 'studyField', 'studyType')->where('seo_url', $url)->firstOrFail();
         $id = $user->id;
 
-        $toReturn['success'] = 1;
         $country = Country::find($user->antenna->country_id);
         $toReturn['user'] = array(
             'id'                =>  $user->id,
@@ -370,8 +365,7 @@ class UserController extends Controller
             'role'                  =>  (count($toReturn['roles']) > 0 || $userData->is_superadmin || $userMaxLevelOfEditing == 1) ? true : false,
         );
 
-
-        return response(json_encode($toReturn), 200);
+        return Self::responseData($toReturn);
     }
 
     public function setBoardPosition(BoardMember $bm, AddBoardPositionRequest $req) {
@@ -381,8 +375,7 @@ class UserController extends Controller
         $bm->end_date = Input::get('end_date');
         $bm->save();
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return responseSuccess("Board position set.");
     }
 
     public function addUserRoles(Role $role, AddRoleRequest $req) {
@@ -401,8 +394,7 @@ class UserController extends Controller
             ]);
         }
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("User role added.");
     }
 
     public function addFeesToUser(Fee $fee, AddFeesRequest $req) {
@@ -431,8 +423,7 @@ class UserController extends Controller
 
         }
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Fee added.");
     }
 
     public function deleteFee(FeeUser $obj) {
@@ -440,8 +431,7 @@ class UserController extends Controller
         $obj = $obj->findOrFail($id);
         $obj->delete();
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Fee deleted");
     }
 
     public function deleteRole(UserRole $obj) {
@@ -449,8 +439,7 @@ class UserController extends Controller
         $obj = $obj->findOrFail($id);
         $obj->delete();
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Role deleted.");
     }
 
     public function deleteMembership(BoardMember $obj) {
@@ -458,8 +447,7 @@ class UserController extends Controller
         $obj = $obj->findOrFail($id);
         $obj->delete();
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Membership deleted.");
     }
 
     public function deleteWorkGroup(UserWorkingGroup $obj) {
@@ -467,8 +455,7 @@ class UserController extends Controller
         $obj = $obj->findOrFail($id);
         $obj->delete();
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Working group deleted.");
     }
 
     public function changeEmail(User $user, ChangeEmailRequest $req) {
@@ -478,27 +465,23 @@ class UserController extends Controller
 
         $emailHash = $user->getEmailHash($user->contact_email);
         if($user->checkEmailHash($emailHash, $user->id)) {
-            $toReturn['success'] = 0;
-            $toReturn['message'] = "Email already exists!";
-            return response(json_encode($toReturn), 200);
+            return Self::responseFailure("Email already exists!");
         }
 
         $user->save();
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Email changed.");
     }
 
     public function changePassword(User $user, ChangePasswordRequest $req) {
         $userData = $req->get('userData');
         $user = $user->findOrFail($userData['id']);
-        
+
         $newPassword = Input::get('password');
         $user->password = Hash::make($newPassword);
         $user->save();
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Password changed.");
     }
 
     public function editBio(User $user, Request $req) {
@@ -509,8 +492,7 @@ class UserController extends Controller
         $user->other = nl2br($bio);
         $user->save();
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Bio changed.");
     }
 
     public function suspendAccount(User $user, Request $req) {
@@ -518,12 +500,11 @@ class UserController extends Controller
 
         $id = Input::get('id');
         $user = $user->findOrFail($id);
-        
+
         $suspensionReason = Input::get('reason');
         $user->suspendAccount($suspensionReason, $userData->first_name." ".$userData->last_name);
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Account suspended.");
     }
 
     public function unsuspendAccount(User $user, Request $req) {
@@ -531,11 +512,10 @@ class UserController extends Controller
 
         $id = Input::get('id');
         $user = $user->findOrFail($id);
-        
+
         $user->unsuspendAccount();
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Account unsuspended.");
     }
 
     public function impersonateUser(User $user, Request $req, Auth $auth) {
@@ -555,10 +535,9 @@ class UserController extends Controller
         // Mirroring Laravel session data to PHP native session.. For use with angular partials..
         session_start();
         $_SESSION['userData'] = Session::get('userData');
-        session_write_close();      
+        session_write_close();
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Impersonated user.");
     }
 
     public function addWorkingGroupToUser(User $user, UserWorkingGroup $uWg, AddWorkingGroupRequest $req) {
@@ -588,8 +567,7 @@ class UserController extends Controller
             $uWg->save();
         }
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Working group added to user.");
     }
 
     public function getDashboardData(User $user, News $news) {
@@ -603,7 +581,7 @@ class UserController extends Controller
                 'local'     =>  $member->antenna->name,
                 'seo_url'   =>  $member->seo_url
             );
-            
+
         }
 
         $toReturn['latestNews'] = array(
@@ -628,7 +606,7 @@ class UserController extends Controller
             );
         }
 
-        return response(json_encode($toReturn), 200);
+        return Self::responseData($toReturn);
     }
 
     public function uploadUserAvatar(Request $req) {
@@ -654,9 +632,7 @@ class UserController extends Controller
         $extension = explode('.', $filename);
         $extension = strtolower($extension[count($extension)-1]);
         if(!in_array($extension, $allowedExt)) {
-            $toReturn['success'] = 0;
-            $toReturn['message'] = "Extension not allowed!";
-            return response(json_encode($toReturn), 200);
+            return Self::responseFailure("Extension not allowed!");
         }
 
         $file->move($tmpPlace, $filename);
@@ -666,8 +642,7 @@ class UserController extends Controller
 
         unlink($tmpPlace.$filename);
 
-        $toReturn['success'] = 1;
-        return response(json_encode($toReturn), 200);
+        return Self::responseSuccess("Avatar uploaded.");
     }
 
     public function getUserAvatar($avatarId) {
@@ -687,8 +662,9 @@ class UserController extends Controller
         return $response;
     }
 
+    //Why have this when there is already getUser() which searches by ID?
     public function getUserById(User $user) {
         $user = $user->findOrFail(Input::get('id'));
-        return json_encode($user);
+        return Self::responseData($user);
     }
 }

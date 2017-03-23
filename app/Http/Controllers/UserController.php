@@ -64,7 +64,7 @@ class UserController extends Controller
         }
 
         $users = $user->getFiltered($search);
-        return Self::responseData($users);
+        return responseData($users);
         //Formatting the response to comply with the grid library should not be done in the API...
 
         if($export) {
@@ -126,14 +126,14 @@ class UserController extends Controller
         		)
         	);
         }
-        return Self::responseFailure("This should not be run.");
+        return responseFailure("This should not be run.");
     }
 
     public function getUser(User $user) {
         $id = Input::get('id');
         $user = $user->with('antenna')->findOrFail($id);
 
-        return Self::responseData($user, "The requested user.");
+        return responseData($user, "The requested user.");
     }
 
     public function activateUser(User $user, Role $role, Fee $fee, EmailTemplate $tpl, Request $req) {
@@ -143,7 +143,7 @@ class UserController extends Controller
         $user = $user->findOrFail($id);
 
         if(!empty($user->activated_at)) {
-            return Self::responseFailure("User already activated.");
+            return responseFailure("User already activated.");
         }
 
         $departmentId = Input::get('department_id');
@@ -235,14 +235,14 @@ class UserController extends Controller
             $message->subject($addToView['title']);
         });
 
-        return Self::responseSuccess('User activated.');
+        return responseSuccess('User activated.');
     }
 
     //TODO this method does not return the same info about a user as getUser does
     public function getUserByToken(Auth $auth) {
         $token = Input::get('token');
         if(empty($token)) {
-            return Self::responseFailure("Empty auth token.");
+            return responseFailure("Empty auth token.");
         }
 
         $now = date('Y-m-d H:i:s');
@@ -257,7 +257,7 @@ class UserController extends Controller
         $data = $userData->user;
         $data['antenna'] = $antenna->name;
 
-        return Self::responseData($data);
+        return responseData($data);
     }
 
     public function getUserProfile(User $user, WorkingGroup $wg, Department $dep, Role $role, Fee $fee, UserRole $userRole, Request $req) {
@@ -365,7 +365,7 @@ class UserController extends Controller
             'role'                  =>  (count($toReturn['roles']) > 0 || $userData->is_superadmin || $userMaxLevelOfEditing == 1) ? true : false,
         );
 
-        return Self::responseData($toReturn);
+        return responseData($toReturn);
     }
 
     public function setBoardPosition(BoardMember $bm, AddBoardPositionRequest $req) {
@@ -394,7 +394,7 @@ class UserController extends Controller
             ]);
         }
 
-        return Self::responseSuccess("User role added.");
+        return responseSuccess("User role added.");
     }
 
     public function addFeesToUser(Fee $fee, AddFeesRequest $req) {
@@ -423,7 +423,7 @@ class UserController extends Controller
 
         }
 
-        return Self::responseSuccess("Fee added.");
+        return responseSuccess("Fee added.");
     }
 
     public function deleteFee(FeeUser $obj) {
@@ -431,7 +431,7 @@ class UserController extends Controller
         $obj = $obj->findOrFail($id);
         $obj->delete();
 
-        return Self::responseSuccess("Fee deleted");
+        return responseSuccess("Fee deleted");
     }
 
     public function deleteRole(UserRole $obj) {
@@ -439,7 +439,7 @@ class UserController extends Controller
         $obj = $obj->findOrFail($id);
         $obj->delete();
 
-        return Self::responseSuccess("Role deleted.");
+        return responseSuccess("Role deleted.");
     }
 
     public function deleteMembership(BoardMember $obj) {
@@ -447,7 +447,7 @@ class UserController extends Controller
         $obj = $obj->findOrFail($id);
         $obj->delete();
 
-        return Self::responseSuccess("Membership deleted.");
+        return responseSuccess("Membership deleted.");
     }
 
     public function deleteWorkGroup(UserWorkingGroup $obj) {
@@ -455,7 +455,7 @@ class UserController extends Controller
         $obj = $obj->findOrFail($id);
         $obj->delete();
 
-        return Self::responseSuccess("Working group deleted.");
+        return responseSuccess("Working group deleted.");
     }
 
     public function changeEmail(User $user, ChangeEmailRequest $req) {
@@ -465,12 +465,12 @@ class UserController extends Controller
 
         $emailHash = $user->getEmailHash($user->contact_email);
         if($user->checkEmailHash($emailHash, $user->id)) {
-            return Self::responseFailure("Email already exists!");
+            return responseFailure("Email already exists!");
         }
 
         $user->save();
 
-        return Self::responseSuccess("Email changed.");
+        return responseSuccess("Email changed.");
     }
 
     public function changePassword(User $user, ChangePasswordRequest $req) {
@@ -481,7 +481,7 @@ class UserController extends Controller
         $user->password = Hash::make($newPassword);
         $user->save();
 
-        return Self::responseSuccess("Password changed.");
+        return responseSuccess("Password changed.");
     }
 
     public function editBio(User $user, Request $req) {
@@ -492,7 +492,7 @@ class UserController extends Controller
         $user->other = nl2br($bio);
         $user->save();
 
-        return Self::responseSuccess("Bio changed.");
+        return responseSuccess("Bio changed.");
     }
 
     public function suspendAccount(User $user, Request $req) {
@@ -504,7 +504,7 @@ class UserController extends Controller
         $suspensionReason = Input::get('reason');
         $user->suspendAccount($suspensionReason, $userData->first_name." ".$userData->last_name);
 
-        return Self::responseSuccess("Account suspended.");
+        return responseSuccess("Account suspended.");
     }
 
     public function unsuspendAccount(User $user, Request $req) {
@@ -515,7 +515,7 @@ class UserController extends Controller
 
         $user->unsuspendAccount();
 
-        return Self::responseSuccess("Account unsuspended.");
+        return responseSuccess("Account unsuspended.");
     }
 
     public function impersonateUser(User $user, Request $req, Auth $auth) {
@@ -537,7 +537,7 @@ class UserController extends Controller
         $_SESSION['userData'] = Session::get('userData');
         session_write_close();
 
-        return Self::responseSuccess("Impersonated user.");
+        return responseSuccess("Impersonated user.");
     }
 
     public function addWorkingGroupToUser(User $user, UserWorkingGroup $uWg, AddWorkingGroupRequest $req) {
@@ -567,7 +567,7 @@ class UserController extends Controller
             $uWg->save();
         }
 
-        return Self::responseSuccess("Working group added to user.");
+        return responseSuccess("Working group added to user.");
     }
 
     public function getDashboardData(User $user, News $news) {
@@ -606,7 +606,7 @@ class UserController extends Controller
             );
         }
 
-        return Self::responseData($toReturn);
+        return responseData($toReturn);
     }
 
     public function uploadUserAvatar(Request $req) {
@@ -632,7 +632,7 @@ class UserController extends Controller
         $extension = explode('.', $filename);
         $extension = strtolower($extension[count($extension)-1]);
         if(!in_array($extension, $allowedExt)) {
-            return Self::responseFailure("Extension not allowed!");
+            return responseFailure("Extension not allowed!");
         }
 
         $file->move($tmpPlace, $filename);
@@ -642,7 +642,7 @@ class UserController extends Controller
 
         unlink($tmpPlace.$filename);
 
-        return Self::responseSuccess("Avatar uploaded.");
+        return responseSuccess("Avatar uploaded.");
     }
 
     public function getUserAvatar($avatarId) {
@@ -665,6 +665,6 @@ class UserController extends Controller
     //Why have this when there is already getUser() which searches by ID?
     public function getUserById(User $user) {
         $user = $user->findOrFail(Input::get('id'));
-        return Self::responseData($user);
+        return responseData($user);
     }
 }

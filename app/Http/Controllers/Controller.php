@@ -67,31 +67,4 @@ class Controller extends BaseController
 
         return false;
     }
-
-    //TODO these should probably be placed inside a helper file, but I was unable to get that to work.
-    public static function responseSuccess($message) {
-      return response()->json([
-        'success' => true,
-        'message' => $message,
-      ], 200);
-    }
-
-    public static function responseFailure($message) {
-      return response()->json([
-        'success' => false,
-        'message' => $message,
-      ], 400);
-    }
-
-    public static function responseData($data, $message = '') {
-      $response = [
-        'success' => true,
-        'data' => $data,
-      ];
-      if (!empty($message)) {
-        $response['message'] = $message;
-      }
-
-      return response()->json($response, 200);
-    }
 }
